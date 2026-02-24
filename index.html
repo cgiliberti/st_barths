@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>~~*~~ ST. BARTHS RESTAURANTS ~~*~~ THE HOTTEST SPOTS ON THE ISLAND!!</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    /* ============================================================
+       FONTS — the 90s ran on Comic Sans and Impact
+    ============================================================ */
+    @import url('https://fonts.googleapis.com/css2?family=Boogaloo&family=Permanent+Marker&display=swap');
+
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+      background-color: #000080;
+      color: #FFFF00;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       STARFIELD BACKGROUND
+    ============================================================ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle, #FFFFFF 1px, transparent 1px) 0 0 / 60px 60px,
+        radial-gradient(circle, #FFFFFFAA 1px, transparent 1px) 30px 30px / 80px 80px,
+        radial-gradient(circle, #FFFFFF77 1px, transparent 1px) 15px 50px / 100px 70px,
+        #000080;
+      z-index: -2;
+      animation: starTwinkle 4s infinite alternate;
+    }
+    @keyframes starTwinkle {
+      from { opacity: 0.8; }
+      to   { opacity: 1; }
+    }
+
+    /* Animated neon gradient overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(255,0,255,0.08) 0%,
+        rgba(0,255,255,0.05) 25%,
+        rgba(0,255,0,0.04) 50%,
+        rgba(255,128,0,0.06) 75%,
+        rgba(255,0,128,0.08) 100%
+      );
+      z-index: -1;
+      animation: gradShift 6s infinite alternate;
+    }
+    @keyframes gradShift {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+
+    /* ============================================================
+       HEADER / HERO
+    ============================================================ */
+    .site-header {
+      text-align: center;
+      padding: 20px 10px 10px;
+      position: relative;
+    }
+
+    /* Spinning "NEW!" badge */
+    .new-badge {
+      display: inline-block;
+      background: #FF0000;
+      color: #FFFF00;
+      font-weight: bold;
+      font-size: 11px;
+      padding: 2px 6px;
+      border: 2px solid #FFFF00;
+      animation: spin 3s linear infinite;
+      transform-origin: center;
+      position: absolute;
+      top: 24px;
+      right: 30px;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .wordart-title {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: clamp(32px, 7vw, 72px);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      background: linear-gradient(
+        180deg,
+        #FFFF00 0%,
+        #FF8C00 20%,
+        #FF0080 40%,
+        #FF00FF 60%,
+        #00FFFF 80%,
+        #00FF00 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(3px 3px 0px #000) drop-shadow(-1px -1px 0px #FF00FF);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .subtitle-flash {
+      font-size: clamp(13px, 2.5vw, 18px);
+      color: #00FFFF;
+      text-shadow: 0 0 8px #00FFFF, 0 0 20px #0080FF;
+      animation: blink 1s step-end infinite;
+      letter-spacing: 3px;
+      margin-bottom: 4px;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    .rainbow-divider {
+      height: 6px;
+      background: linear-gradient(90deg,
+        #FF0000, #FF8C00, #FFFF00, #00FF00,
+        #00FFFF, #0080FF, #8000FF, #FF00FF, #FF0000
+      );
+      border: none;
+      background-size: 200% 100%;
+      animation: rainbowSlide 2s linear infinite;
+      margin: 8px 0;
+    }
+    @keyframes rainbowSlide {
+      from { background-position: 0% 0%; }
+      to   { background-position: 200% 0%; }
+    }
+
+    /* ============================================================
+       MARQUEE BANNER
+    ============================================================ */
+    .marquee-wrap {
+      background: #FF00FF;
+      border-top: 3px solid #FFFF00;
+      border-bottom: 3px solid #FFFF00;
+      padding: 5px 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .marquee-inner {
+      display: inline-block;
+      animation: marqueeScroll 22s linear infinite;
+      font-size: 14px;
+      font-weight: bold;
+      color: #000080;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    @keyframes marqueeScroll {
+      from { transform: translateX(100vw); }
+      to   { transform: translateX(-100%); }
+    }
+
+    /* ============================================================
+       MAIN LAYOUT — two column on big screens
+    ============================================================ */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 0;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 10px;
+    }
+    @media (max-width: 900px) {
+      .main-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ============================================================
+       SIDEBAR — restaurant list
+    ============================================================ */
+    .sidebar {
+      background: #000040;
+      border: 3px solid #FF00FF;
+      border-right: none;
+      padding: 0;
+      overflow-y: auto;
+      max-height: 640px;
+    }
+    @media (max-width: 900px) {
+      .sidebar { border-right: 3px solid #FF00FF; max-height: none; }
+    }
+
+    .sidebar-header {
+      background: linear-gradient(90deg, #FF00FF, #8000FF, #0000FF);
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #FFFF00;
+      text-align: center;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-bottom: 3px solid #FFFF00;
+    }
+
+    .restaurant-card {
+      border-bottom: 2px dashed #FF00FF;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .restaurant-card:last-child { border-bottom: none; }
+    .restaurant-card:hover,
+    .restaurant-card.active {
+      background: rgba(255,0,255,0.25);
+    }
+
+    .card-number {
+      display: inline-block;
+      background: #FFFF00;
+      color: #000080;
+      font-weight: bold;
+      font-size: 11px;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+      text-align: center;
+      border-radius: 50%;
+      margin-right: 8px;
+      font-family: Impact, sans-serif;
+    }
+
+    .card-name {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: 16px;
+      color: #00FFFF;
+      text-shadow: 1px 1px 0 #000080;
+      display: inline;
+    }
+
+    .card-emoji {
+      font-size: 18px;
+      float: right;
+      margin-top: -2px;
+    }
+
+    .card-tags {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .tag {
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 7px;
+      border-radius: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1.5px solid;
+    }
+    .tag-vibe  { background: #8000FF; color: #FFFF00; border-color: #FFFF00; }
+    .tag-price { background: #004000; color: #00FF00; border-color: #00FF00; }
+    .tag-area  { background: #800000; color: #FF8888; border-color: #FF8888; }
+
+    .card-desc {
+      margin-top: 7px;
+      font-size: 11px;
+      color: #CCFFFF;
+      line-height: 1.5;
+    }
+
+    .card-special {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #FFFF00;
+      font-weight: bold;
+    }
+    .card-special::before { content: "✨ WHY IT'S SPECIAL: "; color: #FF8C00; }
+
+    /* ============================================================
+       MAP PANEL
+    ============================================================ */
+    .map-panel {
+      border: 3px solid #FF00FF;
+      position: relative;
+      background: #000;
+    }
+
+    .map-top-bar {
+      background: linear-gradient(90deg, #0000FF, #8000FF);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid #00FFFF;
+    }
+    .map-top-bar span {
+      font-size: 12px;
+      font-weight: bold;
+      color: #FFFF00;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .map-blink-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #00FF00;
+      animation: blink 0.8s step-end infinite;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    #stbarths-map {
+      height: 600px;
+      width: 100%;
+    }
+    @media (max-width: 900px) {
+      #stbarths-map { height: 420px; }
+    }
+
+    /* Custom Leaflet popup styling */
+    .leaflet-popup-content-wrapper {
+      background: #000040 !important;
+      border: 3px solid #FF00FF !important;
+      border-radius: 0 !important;
+      box-shadow: 4px 4px 0 #FF00FF !important;
+      padding: 0 !important;
+    }
+    .leaflet-popup-content {
+      margin: 0 !important;
+      width: 260px !important;
+      font-family: 'Comic Sans MS', cursive !important;
+    }
+    .leaflet-popup-tip {
+      background: #FF00FF !important;
+    }
+    .leaflet-popup-close-button {
+      color: #FFFF00 !important;
+      font-size: 18px !important;
+    }
+
+    .popup-inner {
+      padding: 12px 14px 14px;
+    }
+    .popup-num {
+      display: inline-block;
+      background: #FFFF00;
+      color: #000080;
+      font-family: Impact, sans-serif;
+      font-weight: bold;
+      font-size: 12px;
+      width: 22px; height: 22px;
+      line-height: 22px;
+      text-align: center;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .popup-name {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: 18px;
+      color: #00FFFF;
+      text-shadow: 1px 1px 0 #000080;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .popup-emoji-row {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+    .popup-special {
+      font-size: 11px;
+      color: #FFFF00;
+      font-weight: bold;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .popup-special-label {
+      color: #FF8C00;
+      display: block;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 1px;
+      margin-bottom: 3px;
+    }
+    .popup-vibe {
+      display: inline-block;
+      background: #8000FF;
+      color: #FFFF00;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 7px;
+      border: 1.5px solid #FFFF00;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 4px;
+    }
+    .popup-area {
+      display: inline-block;
+      background: #800000;
+      color: #FF8888;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 7px;
+      border: 1.5px solid #FF8888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .popup-price {
+      display: inline-block;
+      background: #004000;
+      color: #00FF00;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 7px;
+      border: 1.5px solid #00FF00;
+      letter-spacing: 0.5px;
+    }
+
+    /* ============================================================
+       BOTTOM INFO STRIP
+    ============================================================ */
+    .info-strip {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 10px 10px;
+    }
+
+    .info-box {
+      background: #000040;
+      border: 3px solid #00FFFF;
+      padding: 14px 20px;
+      margin-top: 10px;
+    }
+    .info-box h3 {
+      font-family: Impact, 'Arial Black', sans-serif;
+      font-size: 18px;
+      color: #FFFF00;
+      text-shadow: 2px 2px 0 #FF00FF;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #FF00FF;
+      padding-bottom: 6px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+    .info-item {
+      background: rgba(255,0,255,0.12);
+      border: 1.5px solid #FF00FF;
+      padding: 10px 12px;
+    }
+    .info-item-title {
+      font-weight: bold;
+      color: #00FFFF;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .info-item-body {
+      color: #CCCCFF;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    footer {
+      text-align: center;
+      padding: 16px 10px;
+      background: #000;
+      border-top: 4px solid #FF00FF;
+      margin-top: 10px;
+    }
+
+    .visitor-counter {
+      display: inline-block;
+      background: #000;
+      border: 3px inset #888;
+      padding: 4px 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 20px;
+      color: #00FF00;
+      letter-spacing: 6px;
+      text-shadow: 0 0 8px #00FF00;
+      margin: 8px auto;
+    }
+
+    .footer-links {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #FF00FF;
+    }
+    .footer-links a {
+      color: #00FFFF;
+      text-decoration: underline;
+      margin: 0 6px;
+    }
+
+    .best-viewed {
+      font-size: 10px;
+      color: #888888;
+      margin-top: 8px;
+      letter-spacing: 1px;
+    }
+
+    /* ============================================================
+       SPARKLE ANIMATIONS
+    ============================================================ */
+    .sparkle {
+      display: inline-block;
+      animation: sparkleAnim 1.5s ease-in-out infinite;
+    }
+    .sparkle:nth-child(2) { animation-delay: 0.3s; }
+    .sparkle:nth-child(3) { animation-delay: 0.6s; }
+    @keyframes sparkleAnim {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+      50%       { transform: scale(1.4) rotate(20deg); opacity: 0.7; }
+    }
+
+    /* ============================================================
+       UNDER CONSTRUCTION GIF ZONE
+    ============================================================ */
+    .construction-bar {
+      background: repeating-linear-gradient(
+        45deg,
+        #FFD700,
+        #FFD700 10px,
+        #000000 10px,
+        #000000 20px
+      );
+      height: 20px;
+      margin: 4px 0;
+    }
+
+    /* ============================================================
+       GLOWING NEON TEXT
+    ============================================================ */
+    .neon-pink {
+      color: #FF00FF;
+      text-shadow: 0 0 5px #FF00FF, 0 0 15px #FF00FF, 0 0 30px #FF00FF;
+    }
+    .neon-cyan {
+      color: #00FFFF;
+      text-shadow: 0 0 5px #00FFFF, 0 0 15px #00FFFF;
+    }
+    .neon-green {
+      color: #00FF00;
+      text-shadow: 0 0 5px #00FF00, 0 0 15px #00FF00;
+    }
+    .neon-yellow {
+      color: #FFFF00;
+      text-shadow: 0 0 5px #FFFF00, 0 0 15px #FFFF00;
+    }
+
+    /* ============================================================
+       RAINBOW TEXT ANIMATION
+    ============================================================ */
+    .rainbow-text {
+      background: linear-gradient(
+        90deg,
+        #FF0000, #FF8C00, #FFFF00, #00FF00,
+        #00FFFF, #0080FF, #FF00FF, #FF0000
+      );
+      background-size: 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: rainbowText 3s linear infinite;
+    }
+    @keyframes rainbowText {
+      from { background-position: 0%; }
+      to   { background-position: 200%; }
+    }
+
+    /* ============================================================
+       CUSTOM MARKER STYLES
+    ============================================================ */
+    .custom-marker {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: bold;
+      font-family: Impact, sans-serif;
+      box-shadow: 0 0 10px currentColor, 2px 2px 0 #000;
+      cursor: pointer;
+      animation: markerPulse 2s ease-in-out infinite;
+    }
+    @keyframes markerPulse {
+      0%, 100% { box-shadow: 0 0 8px currentColor, 2px 2px 0 #000; }
+      50%       { box-shadow: 0 0 20px currentColor, 2px 2px 0 #000; }
+    }
+
+    /* Hover effect on sidebar cards */
+    .restaurant-card:hover .card-name {
+      animation: rainbowText 1s linear infinite;
+    }
+
+    /* Page title glow pulse */
+    @keyframes titlePulse {
+      0%, 100% { filter: drop-shadow(3px 3px 0px #000) drop-shadow(-1px -1px 0px #FF00FF); }
+      50%       { filter: drop-shadow(3px 3px 0px #000) drop-shadow(-1px -1px 8px #FF00FF) drop-shadow(0 0 20px #FFFF00); }
+    }
+    .wordart-title { animation: titlePulse 3s ease-in-out infinite; }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       CONSTRUCTION BARS
+  ============================================================ -->
+  <div class="construction-bar"></div>
+
+  <!-- ============================================================
+       SITE HEADER
+  ============================================================ -->
+  <div class="site-header">
+    <div class="new-badge">NEW!</div>
+
+    <div style="font-size: clamp(20px, 4vw, 28px); margin-bottom: 6px;">
+      <span class="sparkle">🌴</span>
+      <span class="sparkle">🍹</span>
+      <span class="sparkle">🌴</span>
+    </div>
+
+    <div class="wordart-title">St. Barths</div>
+    <div class="wordart-title" style="font-size: clamp(20px, 4vw, 42px); margin-top: -8px;">
+      TOP RESTAURANTS
+    </div>
+
+    <div class="subtitle-flash">~~~ THE HOTTEST EATS ON THE ISLAND ~~~</div>
+
+    <div style="font-size: 13px; color: #FF8C00; margin: 4px 0; letter-spacing: 2px;">
+      ✦ UPDATED FOR THE NEW MILLENNIUM ✦
+    </div>
+
+    <hr class="rainbow-divider" />
+
+    <div style="font-size: 12px; color: #CCFFFF; margin: 4px 0;">
+      <span class="neon-pink">11</span> restaurants &nbsp;·&nbsp;
+      <span class="neon-cyan">3</span> neighborhoods &nbsp;·&nbsp;
+      <span class="neon-green">∞</span> good vibes
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MARQUEE BANNER
+  ============================================================ -->
+  <div class="marquee-wrap">
+    <div class="marquee-inner">
+      ⭐ CLICK A MARKER ON THE MAP TO LEARN MORE ⭐ &nbsp;&nbsp;&nbsp;&nbsp;
+      🍾 ST. BARTHS — WHERE THE ELITE MEET TO EAT 🍾 &nbsp;&nbsp;&nbsp;&nbsp;
+      🌊 CARIBBEAN DINING PARADISE 🌊 &nbsp;&nbsp;&nbsp;&nbsp;
+      ✨ BOOKMARKS THIS PAGE OR REGRET IT FOREVER ✨ &nbsp;&nbsp;&nbsp;&nbsp;
+      🎵 BEST VIEWED WHILE LISTENING TO ACE OF BASE 🎵 &nbsp;&nbsp;&nbsp;&nbsp;
+      ⭐ CLICK A MARKER ON THE MAP TO LEARN MORE ⭐ &nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+  </div>
+
+  <div class="construction-bar"></div>
+
+  <!-- ============================================================
+       MAIN LAYOUT
+  ============================================================ -->
+  <div class="main-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="restaurant-sidebar">
+      <div class="sidebar-header">
+        🍽️ TOP 11 RESTAURANTS 🍽️
+      </div>
+      <!-- Cards injected by JS -->
+    </aside>
+
+    <!-- MAP PANEL -->
+    <div class="map-panel">
+      <div class="map-top-bar">
+        <span>
+          <span class="map-blink-dot"></span>
+          INTERACTIVE MAP — CLICK TO EXPLORE
+        </span>
+        <span style="font-size: 18px;">🗺️</span>
+      </div>
+      <div id="stbarths-map"></div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================
+       INFO STRIP — neighborhood guide
+  ============================================================ -->
+  <div class="info-strip">
+    <div class="info-box">
+      <h3>🗺️ Neighborhood Guide</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-item-title neon-cyan">⚓ Gustavia</div>
+          <div class="info-item-body">
+            The capital and harbor town. Home to the most upscale restaurants, chic boutiques, and the stunning Shell Beach. This is where the superyachts dock and the scene is lively all night.
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-item-title neon-cyan">🏖️ Saint Jean</div>
+          <div class="info-item-body">
+            The island's liveliest beach neighborhood. A stunning bay lined with beach clubs and restaurants. Great for lunch with your feet in the sand and sunset cocktails.
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-item-title neon-cyan">🌿 Saline / Interior</div>
+          <div class="info-item-body">
+            The romantic garden heartland of the island. Quieter, more secluded, and incredibly beautiful. The tamarind tree at Le Tamarin is 100 years old!!
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-item-title" style="color: #FF8C00;">💡 Pro Tips</div>
+          <div class="info-item-body">
+            Always RESERVE! St. Barths fills up fast especially in high season (Dec–Apr). Most restaurants are open evenings only. Dress smart-casual — this island has taste!!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       FOOTER
+  ============================================================ -->
+  <footer>
+    <div style="font-size: 12px; color: #FF00FF; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">
+      <span class="sparkle">★</span> Visitors Since 1996 <span class="sparkle">★</span>
+    </div>
+    <div class="visitor-counter" id="visitor-counter">0014892</div>
+    <div style="font-size: 11px; color: #00FFFF; margin-top: 6px;">
+      <span class="rainbow-text" style="font-weight: bold;">
+        ★ St. Barths Restaurant Guide ★ Your #1 Source for Caribbean Dining Info ★
+      </span>
+    </div>
+    <div class="footer-links">
+      <a href="#">Home</a> | <a href="#">Guestbook</a> | <a href="#">About</a> | <a href="#">Webring</a> |
+      <a href="https://www.openstreetmap.org/copyright" target="_blank">Map Data © OpenStreetMap</a>
+    </div>
+    <div class="best-viewed">
+      ⚠️ BEST VIEWED IN NETSCAPE NAVIGATOR 4.0 AT 800×600 RESOLUTION ⚠️
+    </div>
+    <div style="font-size: 18px; margin-top: 8px;">
+      <span class="sparkle">🌴</span>
+      <span class="sparkle">🍹</span>
+      <span class="sparkle">🦀</span>
+      <span class="sparkle">🌟</span>
+      <span class="sparkle">🌴</span>
+    </div>
+  </footer>
+
+
+  <!-- ============================================================
+       DATA + MAP SCRIPT
+  ============================================================ -->
+  <script>
+  // ─── RESTAURANT DATA ──────────────────────────────────────────────────────
+
+  const RESTAURANTS = [
+    {
+      id: 1,
+      name: "Bonito",
+      emoji: "🍹",
+      area: "Gustavia",
+      vibe: "French-Latin Fusion",
+      price: "$$$",
+      lat: 17.8972,
+      lng: -62.8514,
+      tagline: "Sky-high views, killer cocktails, party vibes",
+      special: "Perched on a hilltop above Gustavia harbor with jaw-dropping panoramic views. The French-Latin American fusion menu is inventive and bold. Come for sunset drinks and stay all night — the energy is electric.",
+      color: "#FF00FF",
+      glow: "#FF00FF",
+    },
+    {
+      id: 2,
+      name: "Atelier Joël Robuchon",
+      emoji: "⚜️",
+      area: "Gustavia",
+      vibe: "Haute French",
+      price: "$$$$",
+      lat: 17.8960,
+      lng: -62.8498,
+      tagline: "The most Michelin-worthy table on the island",
+      special: "The legendary Robuchon name brought to the Caribbean. Start with sunset cocktails on the rooftop terrace, then descend to the main dining room for impeccable contemporary French cuisine. Meticulous, elegant, unforgettable.",
+      color: "#FFD700",
+      glow: "#FFD700",
+    },
+    {
+      id: 3,
+      name: "L'Isola",
+      emoji: "🇮🇹",
+      area: "Gustavia",
+      vibe: "Authentic Italian",
+      price: "$$$",
+      lat: 17.8955,
+      lng: -62.8505,
+      tagline: "Genuine Italian soul in a Caribbean paradise",
+      special: "Gustavia's beloved Italian gem — antipasti, handmade pasta, and risotti made with the freshest ingredients. The Tuscan and Sicilian wine list is extraordinary. Intimate and romantic with that rare feeling of real authenticity.",
+      color: "#00FF88",
+      glow: "#00FF88",
+    },
+    {
+      id: 4,
+      name: "La Petite Plage",
+      emoji: "🛥️",
+      area: "Gustavia",
+      vibe: "Michelin Seafood",
+      price: "$$$$",
+      lat: 17.8948,
+      lng: -62.8520,
+      tagline: "Michelin-starred chef, harbor views, total glamour",
+      special: "Sister restaurant to the famous St. Tropez original, with the menu curated by Michelin-starred chef Éric Frechon. Gorgeous port setting with sailboats and superyachts as your backdrop. French Riviera vibes meet Caribbean beauty.",
+      color: "#00FFFF",
+      glow: "#00FFFF",
+    },
+    {
+      id: 5,
+      name: "Bagatelle",
+      emoji: "🎉",
+      area: "Gustavia",
+      vibe: "Party Restaurant",
+      price: "$$$",
+      lat: 17.8965,
+      lng: -62.8516,
+      tagline: "WHERE THE PARTY NEVER STOPS",
+      special: "The place to be seen on St. Barths. Bagatelle turns a French-Mediterranean dinner into a full-on dance party by midnight. Chic decor, tables that transform into stages, and energy you cannot find anywhere else.",
+      color: "#FF4444",
+      glow: "#FF4444",
+    },
+    {
+      id: 6,
+      name: "Shellona",
+      emoji: "🐚",
+      area: "Shell Beach",
+      vibe: "Med Beach Club",
+      price: "$$$",
+      lat: 17.8930,
+      lng: -62.8488,
+      tagline: "Sharing plates on the legendary shell beach",
+      special: "Right on the famous Shell Beach — a beach blanketed in millions of tiny shells. Shellona's 'sharing is caring' Mediterranean menu means heaping platters of gorgeous food for the table, all with the Caribbean Sea lapping just feet away.",
+      color: "#FF8C00",
+      glow: "#FF8C00",
+    },
+    {
+      id: 7,
+      name: "La Guérite Beach",
+      emoji: "🌊",
+      area: "Saint Jean",
+      vibe: "Riviera Beach",
+      price: "$$$",
+      lat: 17.9052,
+      lng: -62.8358,
+      tagline: "South of France meets the Caribbean",
+      special: "Brought from Cannes, this legendary Riviera restaurant found its perfect second home on Saint Jean Bay. Mediterranean-Caribbean fusion with insane views over turquoise water. The setting alone earns a reservation.",
+      color: "#0080FF",
+      glow: "#0080FF",
+    },
+    {
+      id: 8,
+      name: "Sand Bar at Eden Rock",
+      emoji: "🏖️",
+      area: "Saint Jean",
+      vibe: "Celebrity Hotspot",
+      price: "$$$$",
+      lat: 17.9040,
+      lng: -62.8348,
+      tagline: "Jean-Georges Vongerichten's Caribbean masterpiece",
+      special: "The iconic Eden Rock hotel's restaurant sits at the base of a dramatic volcanic rock rising from the sea. Chef Jean-Georges Vongerichten brings his NYC magic to the Caribbean — extraordinary food, extraordinary views, extraordinary everything.",
+      color: "#AA00FF",
+      glow: "#AA00FF",
+    },
+    {
+      id: 9,
+      name: "Nikki Beach",
+      emoji: "🥂",
+      area: "Saint Jean",
+      vibe: "Luxury Beach Club",
+      price: "$$$",
+      lat: 17.9046,
+      lng: -62.8342,
+      tagline: "The ultimate see-and-be-seen beach club",
+      special: "The St. Barths outpost of the legendary global brand is considered its finest location. White canopied beds, flowing champagne, and a crowd of beautiful people. The Sunday brunch is a full-day event that people plan their trips around.",
+      color: "#FF69B4",
+      glow: "#FF69B4",
+    },
+    {
+      id: 10,
+      name: "Nao Beach",
+      emoji: "🍣",
+      area: "Saint Jean",
+      vibe: "Japanese-Med Fusion",
+      price: "$$$",
+      lat: 17.9035,
+      lng: -62.8362,
+      tagline: "Where Japan meets the Mediterranean on a beach",
+      special: "A unique fusion of Japanese precision and Mediterranean soul, right on the sands of Saint Jean. Signature sushi, fresh ceviche, and Japanese-inflected small plates. The drinks program is as creative as the food.",
+      color: "#FF4400",
+      glow: "#FF4400",
+    },
+    {
+      id: 11,
+      name: "Le Tamarin",
+      emoji: "🌿",
+      area: "Saline",
+      vibe: "Enchanted Garden",
+      price: "$$$",
+      lat: 17.8775,
+      lng: -62.8155,
+      tagline: "Dinner under a 100-year-old tamarind tree",
+      special: "The most magical dining setting on the island — draped in fairy lights under a massive century-old tamarind tree, with two resident parrots providing entertainment. The romantic atmosphere is completely one-of-a-kind. Unforgettable for a date night.",
+      color: "#44FF44",
+      glow: "#44FF44",
+    },
+  ];
+
+  // ─── RENDER SIDEBAR CARDS ────────────────────────────────────────────────
+
+  const sidebar = document.getElementById('restaurant-sidebar');
+  RESTAURANTS.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'restaurant-card';
+    card.dataset.id = r.id;
+    card.innerHTML = `
+      <div>
+        <span class="card-number">${r.id}</span>
+        <span class="card-name" style="color:${r.color};">${r.name}</span>
+        <span class="card-emoji">${r.emoji}</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag tag-vibe">${r.vibe}</span>
+        <span class="tag tag-price">${r.price}</span>
+        <span class="tag tag-area">📍 ${r.area}</span>
+      </div>
+      <div class="card-desc">${r.tagline}</div>
+      <div class="card-special">${r.special}</div>
+    `;
+
+    card.addEventListener('click', () => {
+      // Highlight card
+      document.querySelectorAll('.restaurant-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      // Fly map to restaurant
+      if (window.stbarMap) {
+        window.stbarMap.flyTo([r.lat, r.lng], 16, { duration: 1.2 });
+        // Open the marker popup
+        if (window.stbarMarkers && window.stbarMarkers[r.id]) {
+          window.stbarMarkers[r.id].openPopup();
+        }
+      }
+    });
+
+    // Add a header element before card 1 (already have it), but cards are appended after the header
+    sidebar.appendChild(card);
+  });
+
+  // ─── VISITOR COUNTER ─────────────────────────────────────────────────────
+
+  (function() {
+    const el = document.getElementById('visitor-counter');
+    fetch('/api/visits')
+      .then(r => r.json())
+      .then(({ count }) => {
+        el.textContent = String(count).padStart(7, '0');
+      })
+      .catch(() => {
+        el.textContent = 'ERROR!';
+      });
+  })();
+
+  // ─── LEAFLET MAP ─────────────────────────────────────────────────────────
+
+  document.addEventListener('DOMContentLoaded', function () {
+
+    const map = L.map('stbarths-map', {
+      center: [17.8970, -62.8430],
+      zoom: 13,
+      minZoom: 11,
+      maxZoom: 18,
+      scrollWheelZoom: false,
+    });
+
+    window.stbarMap = map;
+    window.stbarMarkers = {};
+
+    // Use CartoDB Dark Matter tiles for that extra 90s drama
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }).addTo(map);
+
+    // Add markers
+    RESTAURANTS.forEach(r => {
+      const icon = L.divIcon({
+        className: '',
+        html: `
+          <div style="
+            width:36px; height:36px;
+            border-radius:50%;
+            background:${r.color};
+            border:3px solid ${r.color};
+            display:flex; align-items:center; justify-content:center;
+            font-family:Impact,sans-serif;
+            font-size:14px; font-weight:bold;
+            color:#000;
+            box-shadow: 0 0 12px ${r.glow}, 0 0 4px ${r.glow}, 2px 2px 0 #000;
+            cursor:pointer;
+            animation: markerPulse 2s ease-in-out infinite;
+          ">${r.id}</div>
+        `,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+        popupAnchor: [0, -22],
+      });
+
+      const popupHtml = `
+        <div class="popup-inner">
+          <div style="margin-bottom:8px;">
+            <span class="popup-num">${r.id}</span>
+            <span class="popup-name" style="color:${r.color};text-shadow:0 0 8px ${r.glow};">${r.name}</span>
+          </div>
+          <div class="popup-emoji-row">${r.emoji}</div>
+          <div style="margin-bottom:8px;">
+            <span class="popup-vibe">${r.vibe}</span>
+            <span class="popup-area">${r.area}</span>
+            <span class="popup-price">${r.price}</span>
+          </div>
+          <div class="popup-special">
+            <span class="popup-special-label">✨ What makes it special:</span>
+            ${r.special}
+          </div>
+        </div>
+      `;
+
+      const marker = L.marker([r.lat, r.lng], { icon })
+        .bindPopup(popupHtml, { maxWidth: 280 })
+        .addTo(map);
+
+      // Clicking marker highlights sidebar card
+      marker.on('popupopen', () => {
+        document.querySelectorAll('.restaurant-card').forEach(c => c.classList.remove('active'));
+        const card = document.querySelector(`.restaurant-card[data-id="${r.id}"]`);
+        if (card) {
+          card.classList.add('active');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+
+      window.stbarMarkers[r.id] = marker;
+    });
+
+    // Invalidate size after render
+    setTimeout(() => map.invalidateSize(), 300);
+  });
+  </script>
+
+</body>
+</html>
